@@ -134,26 +134,26 @@ func (r *Reader) ReadBool() (bool, error) {
 	return b != 0, nil
 }
 
-func (r *Reader) mustReadNBitsInCurrentByte(nBits uint8) byte {
+func (r *Reader) mustReadNBitsInCurrentByte(nBits uint) byte {
 	if nBits == 0 {
 		return 0
 	}
 
-	if r.currBitIndex < (nBits - 1) {
+	if r.currBitIndex < uint8(nBits-1) {
 		panic(fmt.Sprintf("%+v", errors.New("insufficient bits to read")))
 	}
 
 	b := r.buf[r.currByteIndex]
 	mask := uint8((1 << (r.currBitIndex + 1)) - 1)
-	result := (b & mask) >> (r.currBitIndex - (nBits - 1))
-	r.forwardIndecies(nBits)
+	result := (b & mask) >> (r.currBitIndex - uint8((nBits - 1)))
+	r.forwardIndecies(uint8(nBits))
 	return result
 }
 
 // ReadNBitsAsUint8 reads `nBits` bits as a unsigned integer from the bit stream and returns it in uint8 (LSB aligned).
 // `nBits` must be less than or equal to 8, otherwise returns an error.
 // If `nBits` == 0, this function always returns 0.
-func (r *Reader) ReadNBitsAsUint8(nBits uint8) (uint8, error) {
+func (r *Reader) ReadNBitsAsUint8(nBits uint) (uint8, error) {
 	if nBits == 0 {
 		return 0, nil
 	}
@@ -168,7 +168,7 @@ func (r *Reader) ReadNBitsAsUint8(nBits uint8) (uint8, error) {
 	}
 
 	// remaining bits in current byte
-	rb := r.currBitIndex + 1
+	rb := uint(r.currBitIndex + 1)
 
 	if nBits <= rb { // can be read from the current byte
 		b := r.mustReadNBitsInCurrentByte(nBits)
@@ -196,7 +196,7 @@ func (r *Reader) ReadUint8() (uint8, error) {
 // ReadNBitsAsUint16BE reads `nBits` bits as a big endian unsigned integer from the bit stream and returns it in uint16 (LSB aligned).
 // `nBits` must be less than or equal to 16, otherwise returns an error.
 // If `nBits` == 0, this function always returns 0.
-func (r *Reader) ReadNBitsAsUint16BE(nBits uint8) (uint16, error) {
+func (r *Reader) ReadNBitsAsUint16BE(nBits uint) (uint16, error) {
 	if nBits == 0 {
 		return 0, nil
 	}
@@ -216,12 +216,12 @@ func (r *Reader) ReadNBitsAsUint16BE(nBits uint8) (uint16, error) {
 	}
 
 	// remaining bits in current byte
-	rb := r.currBitIndex + 1
+	rb := uint(r.currBitIndex + 1)
 
 	// 16 bits may be distributed in up to 3 bytes
 	nBits1 := rb         // count of bits in the first byte
 	nBits2 := nBits - rb // count of bits in the second byte
-	nBits3 := uint8(0)   // count of bits in the third byte
+	nBits3 := uint(0)    // count of bits in the third byte
 	if nBits2 > 8 {
 		nBits3 = nBits2 - 8
 		nBits2 = 8
@@ -248,7 +248,7 @@ func (r *Reader) ReadUint16BE() (uint16, error) {
 // ReadNBitsAsUint32BE reads `nBits` bits as a big endian unsigned integer from the bit stream and returns it in uint32 (LSB aligned).
 // `nBits` must be less than or equal to 32, otherwise returns an error.
 // If `nBits` == 0, this function always returns 0.
-func (r *Reader) ReadNBitsAsUint32BE(nBits uint8) (uint32, error) {
+func (r *Reader) ReadNBitsAsUint32BE(nBits uint) (uint32, error) {
 	if nBits == 0 {
 		return 0, nil
 	}
@@ -268,14 +268,14 @@ func (r *Reader) ReadNBitsAsUint32BE(nBits uint8) (uint32, error) {
 	}
 
 	// remaining bits in current byte
-	rb := r.currBitIndex + 1
+	rb := uint(r.currBitIndex + 1)
 
 	// 32 bits may be distributed in up to 5 bytes
 	nBits1 := rb
-	nBits2 := uint8(8)
+	nBits2 := uint(8)
 	nBits3 := nBits - rb - 8
-	nBits4 := uint8(0)
-	nBits5 := uint8(0)
+	nBits4 := uint(0)
+	nBits5 := uint(0)
 	if nBits3 > 8 {
 		nBits4 = nBits3 - 8
 		if nBits4 > 8 {
@@ -315,7 +315,7 @@ func (r *Reader) ReadUint32BE() (uint32, error) {
 // MSB is a sign bit.
 // `nBits` must be less than or equal to 32, otherwise returns an error.
 // If `nBits` == 0, this function always returns 0.
-func (r *Reader) ReadNBitsAsInt32BE(nBits uint8) (int32, error) {
+func (r *Reader) ReadNBitsAsInt32BE(nBits uint) (int32, error) {
 	v, err := r.ReadNBitsAsUint32BE(nBits)
 	if err != nil {
 		return 0, err
@@ -338,7 +338,7 @@ func (r *Reader) ReadNBitsAsInt32BE(nBits uint8) (int32, error) {
 // ReadNBitsAsUint64BE reads `nBits` bits as a big endian unsigned integer from the bit stream and returns it in uint64 (LSB aligned).
 // `nBits` must be less than or equal to 64, otherwise returns an error.
 // If `nBits` == 0, this function always returns 0.
-func (r *Reader) ReadNBitsAsUint64BE(nBits uint8) (uint64, error) {
+func (r *Reader) ReadNBitsAsUint64BE(nBits uint) (uint64, error) {
 	if nBits == 0 {
 		return 0, nil
 	}
@@ -358,18 +358,18 @@ func (r *Reader) ReadNBitsAsUint64BE(nBits uint8) (uint64, error) {
 	}
 
 	// remaining bits in current byte
-	rb := r.currBitIndex + 1
+	rb := uint(r.currBitIndex + 1)
 
 	// 64bit value may be distributed in 9 bytes
 	nBits1 := rb
-	nBits2 := uint8(8)
-	nBits3 := uint8(8)
-	nBits4 := uint8(8)
+	nBits2 := uint(8)
+	nBits3 := uint(8)
+	nBits4 := uint(8)
 	nBits5 := nBits - rb - 24
-	nBits6 := uint8(0)
-	nBits7 := uint8(0)
-	nBits8 := uint8(0)
-	nBits9 := uint8(0)
+	nBits6 := uint(0)
+	nBits7 := uint(0)
+	nBits8 := uint(0)
+	nBits9 := uint(0)
 	if nBits5 > 8 {
 		nBits6 = nBits5 - 8
 		if nBits6 > 8 {
@@ -445,7 +445,7 @@ type ReadOptions struct {
 
 // ReadNBits reads `nBits` bits from the bit stream and returns it as a slice of bytes.
 // If `nBits` == 0, this function always returns nil.
-func (r *Reader) ReadNBits(nBits uint8, opt *ReadOptions) ([]byte, error) {
+func (r *Reader) ReadNBits(nBits uint, opt *ReadOptions) ([]byte, error) {
 	if nBits == 0 {
 		return nil, nil
 	}
@@ -455,15 +455,15 @@ func (r *Reader) ReadNBits(nBits uint8, opt *ReadOptions) ([]byte, error) {
 		return nil, err
 	}
 
-	padOne := (opt != nil && opt.PadOne)
-	alignRight := (opt != nil && opt.AlignRight)
+	padOne := opt != nil && opt.PadOne
+	alignRight := opt != nil && opt.AlignRight
 
 	maxByteLen := (nBits / 8) + 1
 	result := make([]byte, 0, maxByteLen)
 
 	// remaining bits in current byte
-	rb := r.currBitIndex + 1
-	var bitsToRead uint8
+	rb := uint(r.currBitIndex + 1)
+	var bitsToRead uint
 	if nBits <= rb {
 		bitsToRead = nBits
 	} else {
