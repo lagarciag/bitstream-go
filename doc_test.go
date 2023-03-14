@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bearmini/bitstream-go"
+	"github.com/lagarciag/bitstream-go"
 )
 
 func ExampleReader() {

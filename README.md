@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bearmini/bitstream-go"
+	"github.com/lagarciag/bitstream-go"
 )
 
 func main() {
@@ -75,7 +75,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bearmini/bitstream-go"
+	"github.com/lagarciag/bitstream-go"
 )
 
 func main() {
